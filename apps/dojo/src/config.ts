@@ -142,6 +142,27 @@ export const featureConfig: FeatureConfig[] = [
       "Automatic A2UI error recovery — invalid surfaces are regenerated (no wipe), with a tasteful hard-failure fallback",
     tags: ["A2UI", "Error Recovery", "Streaming"],
   }),
+  createFeatureConfig({
+    id: "backend_feedback",
+    name: "Backend Feedback",
+    description:
+      "The agent asks you to choose between options mid-run using the backend ask_user tool",
+    tags: ["HITL", "Feedback", "Choices"],
+  }),
+  createFeatureConfig({
+    id: "user_input",
+    name: "User Input",
+    description:
+      "The agent collects missing details from you through a form before continuing, via the backend get_user_input tool",
+    tags: ["HITL", "Forms", "Interactivity"],
+  }),
+  createFeatureConfig({
+    id: "team_human_in_the_loop",
+    name: "Team Human in the Loop",
+    description:
+      "A team pauses for your confirmation before a member takes a sensitive action like sending an email",
+    tags: ["HITL", "Teams", "Confirmation"],
+  }),
 ];
 
 export default featureConfig;

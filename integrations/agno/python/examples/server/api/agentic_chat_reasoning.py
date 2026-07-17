@@ -1,6 +1,7 @@
 """Agentic Chat with Reasoning — Uses reasoning models (o4-mini) that show their thinking process."""
 
 from agno.agent.agent import Agent
+from agno.db.in_memory import InMemoryDb
 from agno.models.openai import OpenAIResponses
 from agno.os import AgentOS
 from agno.os.interfaces.agui import AGUI
@@ -13,6 +14,7 @@ agent = Agent(
         reasoning_effort="high",
         reasoning_summary="auto",
     ),
+    db=InMemoryDb(),
     reasoning=True,
     description="You are a helpful AI assistant with deep reasoning capabilities.",
     instructions=[

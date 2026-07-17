@@ -218,6 +218,17 @@ export async function setupLLMock(): Promise<void> {
   // over these for requests containing their specific tool names.
   mockServer.loadFixtureFile(path.join(FIXTURES_DIR, "human-in-the-loop.json"));
 
+  // Agno backend HITL fixtures (ask_user / get_user_input / team send_email).
+  // Loaded explicitly so their userMessage matches take priority over the
+  // generic loadFixtureDir pass below (first-match-wins). In the team fixture
+  // file, ORDER MATTERS: the delegated member request ("EMAILER TASK") must
+  // match before the leader's delegate_task_to_member fixture.
+  mockServer.loadFixtureFile(path.join(FIXTURES_DIR, "backend-feedback.json"));
+  mockServer.loadFixtureFile(path.join(FIXTURES_DIR, "user-input.json"));
+  mockServer.loadFixtureFile(
+    path.join(FIXTURES_DIR, "team-human-in-the-loop.json"),
+  );
+
   // OSS-93 Background Agents: the agent dispatches `run_deep_research` as a
   // Mastra background task. Scoped by that tool name so it never hijacks other
   // demos. Two turns: (1) on the first request (no tool result yet) emit the

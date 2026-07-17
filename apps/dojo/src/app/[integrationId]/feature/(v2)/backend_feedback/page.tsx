@@ -9,7 +9,7 @@ import {
 } from "@copilotkit/react-core/v2";
 import { CopilotKit } from "@copilotkit/react-core";
 import { z } from "zod";
-import { MultipleChoiceCard } from "../hitl-components";
+import { AskUserCard } from "../hitl-components";
 
 interface BackendFeedbackProps {
   params: Promise<{ integrationId: string }>;
@@ -42,14 +42,22 @@ const ChatContent = () => {
 
   useHumanInTheLoop({
     agentId: "backend_feedback",
-    name: "get_user_choice",
-    description: "Present options to the user and get their selection",
+    name: "ask_user",
+    description: "Ask the user to choose from predefined options before continuing",
     parameters: z.object({
-      question: z.string().describe("The question to ask the user"),
-      options: z.array(z.string()).describe("Array of options for the user to choose from"),
+      questions: z.array(
+        z.object({
+          question: z.string(),
+          header: z.string().optional(),
+          options: z.array(
+            z.object({ label: z.string(), description: z.string().optional() }),
+          ),
+          multi_select: z.boolean().optional(),
+        }),
+      ),
     }),
     render: ({ args, respond, status }: any) => (
-      <MultipleChoiceCard args={args} respond={respond} status={status} />
+      <AskUserCard args={args} respond={respond} status={status} />
     ),
   });
 

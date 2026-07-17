@@ -6,14 +6,17 @@ import { useTheme } from "next-themes";
 export const HITLCard = ({
   children,
   width = "w-[450px]",
+  testId,
 }: {
   children: React.ReactNode;
   width?: string;
+  testId?: string;
 }) => {
   const { theme } = useTheme();
   return (
     <div className="flex">
       <div
+        data-testid={testId}
         className={`relative rounded-xl ${width} p-6 shadow-lg ${
           theme === "dark"
             ? "bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white border border-slate-700/50"
@@ -79,11 +82,13 @@ export const ActionButton = ({
   onClick,
   disabled,
   variant = "primary",
+  testId,
   children,
 }: {
   onClick: () => void;
   disabled?: boolean;
   variant?: "primary" | "secondary" | "success" | "danger";
+  testId?: string;
   children: React.ReactNode;
 }) => {
   const { theme } = useTheme();
@@ -102,6 +107,7 @@ export const ActionButton = ({
 
   return (
     <button
+      data-testid={testId}
       onClick={onClick}
       disabled={disabled}
       className={`px-5 py-2 rounded-lg font-medium transition-all ${variants[variant]} ${
@@ -120,16 +126,19 @@ export const TextInput = ({
   placeholder,
   disabled,
   type = "text",
+  testId,
 }: {
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
   disabled?: boolean;
   type?: "text" | "password";
+  testId?: string;
 }) => {
   const { theme } = useTheme();
   return (
     <input
+      data-testid={testId}
       type={type}
       value={value}
       onChange={(e) => onChange(e.target.value)}
@@ -240,7 +249,7 @@ export const EmailConfirmationCard = ({
   if (!args?.to) return null;
 
   return (
-    <HITLCard width="w-[500px]">
+    <HITLCard width="w-[500px]" testId="confirm-email-card">
       {decision ? (
         <StatusBadge
           variant={decision === "approved" ? "success" : "error"}
@@ -256,10 +265,20 @@ export const EmailConfirmationCard = ({
             {args.body && <DetailRow label="Body" value={args.body} />}
           </DetailsSection>
           <div className="flex justify-center gap-4">
-            <ActionButton variant="secondary" onClick={handleReject} disabled={status !== "executing"}>
+            <ActionButton
+              variant="secondary"
+              onClick={handleReject}
+              disabled={status !== "executing"}
+              testId="confirm-email-cancel"
+            >
               ✗ Cancel
             </ActionButton>
-            <ActionButton variant="success" onClick={handleApprove} disabled={status !== "executing"}>
+            <ActionButton
+              variant="success"
+              onClick={handleApprove}
+              disabled={status !== "executing"}
+              testId="confirm-email-send"
+            >
               ✓ Send Email
             </ActionButton>
           </div>
@@ -472,6 +491,199 @@ export const MultipleChoiceCard = ({
               disabled={status !== "executing" || !selected}
             >
               Confirm Selection
+            </ActionButton>
+          </div>
+        </>
+      )}
+    </HITLCard>
+  );
+};
+
+// ─── Backend HITL cards (real Agno pause types) ──────────────────────
+
+// ask_user card (backend UserFeedbackTools). Renders one or more questions,
+// radio for single-select and checkbox for multi_select, and replies with the
+// backend contract: { selections: { "<question>": ["<label>", ...] } }.
+export const AskUserCard = ({
+  args,
+  respond,
+  status,
+}: {
+  args: {
+    questions?: {
+      question: string;
+      header?: string;
+      options?: { label: string; description?: string }[];
+      multi_select?: boolean;
+    }[];
+  };
+  respond: (result: any) => void;
+  status: string;
+}) => {
+  const { theme } = useTheme();
+  const uid = React.useId();
+  const [selections, setSelections] = useState<Record<string, string[]>>({});
+  const [submitted, setSubmitted] = useState(false);
+
+  const questions = args?.questions ?? [];
+  if (questions.length === 0) return null;
+
+  const isPicked = (q: string, label: string) => (selections[q] || []).includes(label);
+  const toggle = (q: string, label: string, multi: boolean) => {
+    setSelections((prev) => {
+      const cur = prev[q] || [];
+      if (!multi) return { ...prev, [q]: [label] };
+      return { ...prev, [q]: cur.includes(label) ? cur.filter((l) => l !== label) : [...cur, label] };
+    });
+  };
+
+  // A question with no options can't be answered — don't let it deadlock Submit.
+  const allAnswered = questions.every(
+    (q) => (q.options?.length ?? 0) === 0 || (selections[q.question]?.length ?? 0) > 0,
+  );
+  const canSubmit = allAnswered && status === "executing" && !submitted;
+  const handleSubmit = () => {
+    if (canSubmit) {
+      setSubmitted(true);
+      respond({ selections });
+    }
+  };
+
+  return (
+    <HITLCard width="w-[500px]" testId="ask-user-card">
+      {submitted ? (
+        <StatusBadge variant="success" icon="✓" label="Submitted" />
+      ) : (
+        <>
+          <CardHeader title="Make a Choice" subtitle="Select an option to continue" />
+          <div className="space-y-5 mb-5">
+            {questions.map((q, qi) => {
+              const multi = q.multi_select === true;
+              return (
+                <div key={qi}>
+                  <div
+                    className={`text-xs font-semibold uppercase mb-1 ${
+                      theme === "dark" ? "text-slate-400" : "text-gray-500"
+                    }`}
+                  >
+                    {q.header || "Question"}
+                    {multi ? " · pick one or more" : ""}
+                  </div>
+                  <div className={`font-medium mb-2 ${theme === "dark" ? "text-white" : "text-gray-800"}`}>
+                    {q.question}
+                  </div>
+                  <div className="space-y-2">
+                    {(q.options || []).map((opt, oi) => (
+                      <label
+                        key={oi}
+                        data-testid="ask-user-option"
+                        className={`flex items-start gap-3 p-3 rounded-lg border transition-all ${
+                          isPicked(q.question, opt.label)
+                            ? theme === "dark"
+                              ? "bg-blue-900/30 border-blue-500/50"
+                              : "bg-blue-50 border-blue-300"
+                            : theme === "dark"
+                              ? "bg-slate-800/50 border-slate-600 hover:border-slate-500"
+                              : "bg-white border-gray-200 hover:border-gray-300"
+                        } ${status !== "executing" ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
+                      >
+                        <input
+                          type={multi ? "checkbox" : "radio"}
+                          name={`ask-${uid}-${qi}`}
+                          checked={isPicked(q.question, opt.label)}
+                          disabled={status !== "executing"}
+                          onChange={() => toggle(q.question, opt.label, multi)}
+                          className="mt-1"
+                        />
+                        <span>
+                          <span className="font-medium">{opt.label}</span>
+                          {opt.description && (
+                            <span
+                              className={`block text-xs ${
+                                theme === "dark" ? "text-slate-400" : "text-gray-500"
+                              }`}
+                            >
+                              {opt.description}
+                            </span>
+                          )}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <div className="flex justify-center">
+            <ActionButton onClick={handleSubmit} disabled={!canSubmit} testId="ask-user-submit">
+              Submit
+            </ActionButton>
+          </div>
+        </>
+      )}
+    </HITLCard>
+  );
+};
+
+// get_user_input form card (backend UserControlFlowTools). Renders one input per
+// requested field and replies with the backend contract: { values: { "<field>": "<value>" } }.
+export const UserInputFormCard = ({
+  args,
+  respond,
+  status,
+}: {
+  args: {
+    user_input_fields?: { field_name: string; field_type?: string; field_description?: string }[];
+  };
+  respond: (result: any) => void;
+  status: string;
+}) => {
+  const fields = args?.user_input_fields ?? [];
+  const [values, setValues] = useState<Record<string, string>>({});
+  const [submitted, setSubmitted] = useState(false);
+
+  if (fields.length === 0) return null;
+
+  const isSecret = (f: { field_name: string; field_type?: string }) =>
+    /secret|password|api[_-]?key|token/i.test(f.field_name) ||
+    /secret|password/i.test(f.field_type || "");
+
+  const allFilled = fields.every((f) => (values[f.field_name] ?? "").trim().length > 0);
+  const canSubmit = allFilled && status === "executing" && !submitted;
+  const handleSubmit = () => {
+    if (canSubmit) {
+      setSubmitted(true);
+      respond({ values });
+    }
+  };
+
+  return (
+    <HITLCard testId="user-input-form">
+      {submitted ? (
+        <StatusBadge variant="info" icon="✓" label="Input Received" />
+      ) : (
+        <>
+          <CardHeader title="Input Required" subtitle="Please provide the following" />
+          <div className="space-y-4 mb-5">
+            {fields.map((f) => (
+              <div key={f.field_name}>
+                <label className="block text-sm font-medium mb-1">
+                  {f.field_description || f.field_name}
+                </label>
+                <TextInput
+                  type={isSecret(f) ? "password" : "text"}
+                  value={values[f.field_name] || ""}
+                  onChange={(v) => setValues((prev) => ({ ...prev, [f.field_name]: v }))}
+                  placeholder={f.field_name}
+                  disabled={status !== "executing"}
+                  testId="user-input-field"
+                />
+              </div>
+            ))}
+          </div>
+          <div className="flex justify-center">
+            <ActionButton onClick={handleSubmit} disabled={!canSubmit} testId="user-input-submit">
+              Submit
             </ActionButton>
           </div>
         </>

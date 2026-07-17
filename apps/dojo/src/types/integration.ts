@@ -22,7 +22,12 @@ export type Feature =
   | "crew_chat"
   | "error_flow"
   | "background_agents"
-  | "observational_memory";
+  | "observational_memory"
+  | "tool_confirmation"
+  | "user_input"
+  | "backend_feedback"
+  | "team_human_in_the_loop"
+  | "nested_team_chat";
 
 export interface MenuIntegrationConfig {
   id: string;
