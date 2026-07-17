@@ -6,6 +6,7 @@ and background changing, exposed in an AG-UI compatible way.
 from typing import List
 
 from agno.agent.agent import Agent
+from agno.db.in_memory import InMemoryDb
 from agno.os import AgentOS
 from agno.os.interfaces.agui import AGUI
 from agno.models.openai import OpenAIChat
@@ -43,6 +44,7 @@ def generate_haiku(english: List[str], japanese: List[str], image_names: List[st
 
 agent = Agent(
     model=OpenAIChat(id="gpt-4o"),
+    db=InMemoryDb(),
     tools=[generate_haiku],
     description="Help the user with writing Haikus. If the user asks for a haiku, use the generate_haiku tool to display the haiku to the user.",
     debug_mode=True,

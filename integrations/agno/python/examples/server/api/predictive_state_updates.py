@@ -6,12 +6,14 @@ sees the document being written in real-time.
 """
 
 from agno.agent.agent import Agent
+from agno.db.in_memory import InMemoryDb
 from agno.models.openai import OpenAIChat
 from agno.os import AgentOS
 from agno.os.interfaces.agui import AGUI
 
 agent = Agent(
     model=OpenAIChat(id="gpt-4o"),
+    db=InMemoryDb(),
     session_state={"document": ""},
     add_session_state_to_context=True,
     enable_agentic_state=True,
