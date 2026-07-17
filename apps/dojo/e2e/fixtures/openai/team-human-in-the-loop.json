@@ -1,0 +1,30 @@
+{
+  "fixtures": [
+    {
+      "match": { "userMessage": "EMAILER TASK" },
+      "response": {
+        "toolCalls": [
+          {
+            "name": "send_email",
+            "arguments": "{\"to\":\"alice@example.com\",\"subject\":\"Tomorrow's Meeting\",\"body\":\"Reminder about our 10am meeting.\"}"
+          }
+        ]
+      }
+    },
+    {
+      "match": { "userMessage": "Send an email to alice@example.com" },
+      "response": {
+        "toolCalls": [
+          {
+            "name": "delegate_task_to_member",
+            "arguments": "{\"member_id\":\"emailer\",\"task\":\"EMAILER TASK: send the meeting reminder\"}"
+          }
+        ]
+      }
+    },
+    {
+      "match": { "userMessage": "was the email sent" },
+      "response": { "content": "Yes" }
+    }
+  ]
+}

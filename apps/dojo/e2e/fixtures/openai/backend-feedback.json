@@ -1,0 +1,19 @@
+{
+  "fixtures": [
+    {
+      "match": { "userMessage": "pick a cuisine" },
+      "response": {
+        "toolCalls": [
+          {
+            "name": "ask_user",
+            "arguments": "{\"questions\":[{\"question\":\"Which cuisine would you like?\",\"header\":\"Cuisine\",\"options\":[{\"label\":\"Italian\",\"description\":\"Pasta and pizza\"},{\"label\":\"Mexican\",\"description\":\"Tacos and more\"}],\"multi_select\":false}]}"
+          }
+        ]
+      }
+    },
+    {
+      "match": { "userMessage": "Which cuisine did I pick" },
+      "response": { "content": "Italian" }
+    }
+  ]
+}
