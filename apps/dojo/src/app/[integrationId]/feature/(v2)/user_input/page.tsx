@@ -9,7 +9,7 @@ import {
 } from "@copilotkit/react-core/v2";
 import { CopilotKit } from "@copilotkit/react-core";
 import { z } from "zod";
-import { TextInputCard, SecretInputCard } from "../hitl-components";
+import { UserInputFormCard } from "../hitl-components";
 
 interface UserInputProps {
   params: Promise<{ integrationId: string }>;
@@ -42,27 +42,19 @@ const ChatContent = () => {
 
   useHumanInTheLoop({
     agentId: "user_input",
-    name: "get_user_text",
-    description: "Get text input from the user",
+    name: "get_user_input",
+    description: "Collect missing information from the user before continuing",
     parameters: z.object({
-      prompt: z.string().describe("The prompt to show the user"),
-      placeholder: z.string().optional().describe("Placeholder text for the input field"),
+      user_input_fields: z.array(
+        z.object({
+          field_name: z.string(),
+          field_type: z.string().optional(),
+          field_description: z.string().optional(),
+        }),
+      ),
     }),
     render: ({ args, respond, status }: any) => (
-      <TextInputCard args={args} respond={respond} status={status} />
-    ),
-  });
-
-  useHumanInTheLoop({
-    agentId: "user_input",
-    name: "get_secret_input",
-    description: "Get sensitive input like API keys or passwords from the user",
-    parameters: z.object({
-      prompt: z.string().describe("The prompt to show the user"),
-      service: z.string().optional().describe("Name of the service (e.g., OpenAI, Stripe)"),
-    }),
-    render: ({ args, respond, status }: any) => (
-      <SecretInputCard args={args} respond={respond} status={status} />
+      <UserInputFormCard args={args} respond={respond} status={status} />
     ),
   });
 
