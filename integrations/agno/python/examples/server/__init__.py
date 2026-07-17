@@ -12,6 +12,9 @@ AG-UI dojo features:
 - Predictive State Updates (document writer)
 - Shared State (recipe assistant)
 - Tool-based Generative UI (haiku generator)
+- Backend Feedback (ask_user multiple choice)
+- User Input (get_user_input form collection)
+- Team Human in the Loop (member tool confirmation)
 """
 
 from __future__ import annotations
@@ -29,11 +32,14 @@ from .api import (
     agentic_chat_multimodal_app,
     agentic_chat_reasoning_app,
     agentic_generative_ui_app,
+    backend_feedback_app,
     backend_tool_rendering_app,
     human_in_the_loop_app,
     predictive_state_updates_app,
     shared_state_app,
+    team_human_in_the_loop_app,
     tool_based_generative_ui_app,
+    user_input_app,
 )
 
 app = FastAPI(title="Agno AG-UI server")
@@ -46,6 +52,9 @@ app.mount("/human_in_the_loop", human_in_the_loop_app, "Human in the Loop")
 app.mount("/predictive_state_updates", predictive_state_updates_app, "Predictive State Updates")
 app.mount("/shared_state", shared_state_app, "Shared State")
 app.mount("/tool_based_generative_ui", tool_based_generative_ui_app, "Tool-based Generative UI")
+app.mount("/backend_feedback", backend_feedback_app, "Backend Feedback")
+app.mount("/user_input", user_input_app, "User Input")
+app.mount("/team_human_in_the_loop", team_human_in_the_loop_app, "Team Human in the Loop")
 
 
 def main():
